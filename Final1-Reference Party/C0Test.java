@@ -16,6 +16,11 @@ public class C0Test {
     public static void enableTerminalTestingMode() {
         Terminal.enableTestingMode();
     }
+    
+    @Before
+    public void reset() {
+        Terminal.reset();
+    }
 
     @After
     public void run() {
@@ -39,7 +44,7 @@ public class C0Test {
         Terminal.addSingleLineOutputThatMatches("quit ;;", startsWith("Error,"));
         Terminal.addSingleLineOutputThatMatches("quit quit", startsWith("Error,"));
         Terminal.addSingleLineOutputThatMatches("\tquit", startsWith("Error,"));
-        Terminal.addSingleLineOutputThatMatches("\nquit", startsWith("Error,"));
+        // Terminal.addSingleLineOutputThatMatches("quit", startsWith("Error,"));
         Terminal.addSingleLineOutputThatMatches("QUIT", startsWith("Error,"));
         Terminal.addSingleLineOutputThatMatches("Quit", startsWith("Error,"));
         

@@ -6,12 +6,12 @@ import org.junit.*;
 import edu.kit.informatik.Terminal;
 
 /**
- * Test for C9 - all publications
+ * Test for C10 - list invalid publications
  *
  * @author Nico Weidmann
  * Based on templates & inspiration from Micha Hanselmann
  */
-public class C9Test {
+public class C10Test {
 
     @BeforeClass
     public static void enableTerminalTestingMode() {
@@ -27,7 +27,7 @@ public class C9Test {
     public void run() {
 
         // run and terminate
-        Terminal.addSingleLineOutputThatIsExactly("quit", "Ok");
+        TestHelper.expectOk("quit");
         Wrapper.main();
 
         // cleanup
@@ -38,27 +38,26 @@ public class C9Test {
     @Test
     public void invalidSyntax() {
 
-        Terminal.addSingleLineOutputThatMatches(" all publications", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications ", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("allpublications", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all   publications", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publication", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("list publications", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publicaitons", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("\tall publications", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications param", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications this,is,invalid", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications,", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications no;list;allowed", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications ;;", startsWith("Error, "));
-        Terminal.addSingleLineOutputThatMatches("all publications;", startsWith("Error, "));
+        TestHelper.expectError("list invalid publications ");
+        TestHelper.expectError("list invalid   publications");
+        TestHelper.expectError(" list invalid publications");
+        TestHelper.expectError("list   invalid publicatations");
+        TestHelper.expectError("invalid publications");
+        
+        // no parameters allowed
+        TestHelper.expectError("list invalid publications param");
+        TestHelper.expectError("list invalid publicationsText");
+        TestHelper.expectError("list invalid publications unexpected;list");
+        TestHelper.expectError("list invalid publications,");
+        TestHelper.expectError("list invalid publications , ");
+        TestHelper.expectError("list invalid publications ;;");
     }
 
     @Test
     public void valid() {
 
         // no publications present
-        Terminal.addNoOutput("all publications");
+        Terminal.addNoOutput("list invalid publications");
 
         // add conference series
         Terminal.addSingleLineOutputThatIsExactly("add conference series A", "Ok");
@@ -80,8 +79,8 @@ public class C9Test {
         Terminal.addSingleLineOutputThatIsExactly("add article to journal Bild:bsarticle2,1337,NACHWUCHS IM HAUSE LOMBARDI", "Ok");
         Terminal.addSingleLineOutputThatIsExactly("add article to journal Bild:bsarticle3,1337,Pilot landet kopfueber in Wohnstrasse", "Ok");
 
-        // get list
-        Terminal.addMultipleLineOutputThatMatches("all publications", containsInAnyOrder(
+        // get list, all articles are invalid
+        Terminal.addMultipleLineOutputThatMatches("list invalid publications", containsInAnyOrder(
                 new String[] {
                         "awesomearticle1", 
                         "awesomearticle2", 
@@ -89,6 +88,22 @@ public class C9Test {
                         "awesomearticle4",
                         "bsarticle1",
                         "bsarticle2",
+                        "bsarticle3"
+                        }));
+        
+        // adding authors and adding those authors to some articles (can only cause failure if C1 and C6 fail too)
+        TestHelper.expectOk("add author Peter,Zwegat");
+        TestHelper.expectOk("add author Robert,Geiss");
+        TestHelper.expectOk("written-by awesomearticle1,Peter Zwegat");
+        TestHelper.expectOk("written-by awesomearticle3,Peter Zwegat;Robert Geiss");
+        TestHelper.expectOk("written-by bsarticle1,Robert Geiss");
+        TestHelper.expectOk("written-by bsarticle2,Robert Geiss");
+        
+        // get list, only some articles are invalid
+        Terminal.addMultipleLineOutputThatMatches("list invalid publications", containsInAnyOrder(
+                new String[] { 
+                        "awesomearticle2",
+                        "awesomearticle4",
                         "bsarticle3"
                         }));
     }
